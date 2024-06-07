@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ページ</title>
+
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        th,
+        td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 10px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            white-space: nowrap;
+        }
+
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 50px;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 80px;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 100px;
+        }
+
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 80px;
+        }
+
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 90px;
+        }
+
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 110px;
+        }
+
+        th:nth-child(7),
+        td:nth-child(7) {
+            width: 120px;
+        }
+
+        th:nth-child(8),
+        td:nth-child(8) {
+            width: 80px;
+        }
+
+        th:nth-child(9),
+        td:nth-child(9) {
+            width: 100px;
+        }
+
+        th:nth-child(10),
+        td:nth-child(10) {
+            width: 100px;
+        }
+
+        .filter-container {
+            text-align: center;
+            margin-left: 2%;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .search_button {
+            padding: 5px;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .change_page button {
+            margin-left: 90%;
+            padding: 7px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>管理者ページ</h1>
+    <div class="change_page"><button onclick="redirect()">編集</button></div>
+
+    <div class="filter-container">
+        <label for="nameInput">カメラ名：<input type="text" id="nameInput"></label>
+
+        <label for="typeFilter">タイプ：<select id="typeFilter">
+                <option value="all">All</option>
+                <option value="ミラーレス">ミラーレス</option>
+                <option value="一眼レフ">一眼レフ</option>
+            </select></label>
+
+        <label for="sensorSizeFilter">センサーサイズ： <select id="sensorSizeFilter">
+                <option value="">All</option>
+                <option value="中判サイズ">中判サイズ</option>
+                <option value="フルサイズ">フルサイズ</option>
+                <option value="APS-C">APS-C</option>
+                <option value="フォーサイズ">フォーサイズ</option>
+            </select></label>
+
+        <label for="makerFilter">メーカー：<select id="makerFilter">
+                <option value="">All</option>
+                <option value="ソニー">ソニー</option>
+                <option value="キャノン">キャノン</option>
+                <option value="ニコン">ニコン</option>
+                <option value="パナソニック">パナソニック</option>
+                <option value="オリンパス">オリンパス</option>
+                <option value="富士フイルム">富士フイルム</option>
+            </select></label>
+
+    </div>
+    <div class="search_button">
+        <button onclick="search()">検索</button>
+        <button onclick="resetFilters()">リセット</button>
+    </div>
+
+    <table id="cameraDetails">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>カメラ名</th>
+                <th>タイプ</th>
+                <th>センサーサイズ</th>
+                <th>画素数</th>
+                <th>メーカー</th>
+                <th>レンズマウント</th>
+                <th>手ぶれ補正</th>
+                <th>価格目安</th>
+                <th>発売日</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchCameraData() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/get/');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching camera data:', error);
+                return [];
+            }
+        }
+
+        async function search() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const sensorSizeFilter = document.getElementById('sensorSizeFilter').value;
+            const makerFilter = document.getElementById('makerFilter').value;
+            const nameFilter = document.getElementById('nameInput').value.toLowerCase();
+
+            const cameraData = await fetchCameraData();
+
+            const filteredData = cameraData.filter(camera => {
+                const matchesType = typeFilter === 'all' || camera.type === typeFilter;
+                const matchesSensorSize = sensorSizeFilter === '' || camera.sensorSize === sensorSizeFilter;
+                const matchesMaker = makerFilter === '' || camera.maker === makerFilter;
+                const matchesName = camera.name.toLowerCase().includes(nameFilter);
+
+                return matchesType && matchesSensorSize && matchesMaker && matchesName;
+            });
+
+            updateCameraDetails(filteredData);
+        }
+
+        async function resetFilters() {
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('sensorSizeFilter').value = '';
+            document.getElementById('makerFilter').value = '';
+            document.getElementById('nameInput').value = '';
+
+            const cameraData = await fetchCameraData();
+            updateCameraDetails(cameraData);
+        }
+
+        function updateCameraDetails(data) {
+            const cameraDetailsTableBody = document.querySelector('#cameraDetails tbody');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+
+            cameraDetailsTableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                noResultsMessage.style.display = 'block';
+                return;
+            }
+
+            noResultsMessage.style.display = 'none';
+
+            data.forEach(camera => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td><strong>${camera.id}</strong></td>
+                <td><strong>${camera.name}</strong></td>
+                <td>${camera.type}</td>
+                <td>${camera.sensorSize}</td>
+                <td>${camera.pixelNumber}<p>万画素</p></td>
+                <td>${camera.maker}</td>
+                <td>${camera.lensMounts}</td>
+                <td>${camera.imageSta}</td>
+                <td>¥${formatPrice(camera.price)}</td>
+                <td>${camera.releaseDate}</td>
+                <td><a href="${camera.URL}" target="_blank">詳しく見る</a></td>
+            `;
+                cameraDetailsTableBody.appendChild(row);
+            });
+        }
+
+        function formatPrice(price) {
+            return price.toLocaleString('ja-JP');
+        }
+
+        document.addEventListener('DOMContentLoaded', resetFilters);
+
+        function redirect() {
+            window.location.href = 'edit.html';
+        }
+
+    </script>
+    <p id="noResultsMessage" style="text-align: center; display: none;">検索結果に一致するものはありません。</p>
+</body>
+
+</html>

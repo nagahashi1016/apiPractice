@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン</title>
+
+    <style>
+        body{
+            margin-top: 10%;
+            text-align: center;
+        }
+        .redirect_home{
+            margin-top: 2%;
+        }
+        .redirect_home button{
+            margin-top: 2%;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form id="redirectForm">
+        <label for="inputText">パスワード：</label>
+        <input type="password" id="inputText" name="inputText" required><br>
+        <div class="redirect_home">
+            <button type="button" onclick="redirect()">Submit</button><br>
+            <button type="button" onclick="redirect_home()">戻る</button>
+        </div>
+        
+    </form>
+
+    <script>
+        function redirect() {
+            var inputValue = document.getElementById('inputText').value;
+
+            if (inputValue === "20122056") {
+                window.location.href = 'index_kanri.html';
+            } else {
+                alert("パスワードが違います。");
+                window.location.href = 'login.html';
+            }
+        }
+        function redirect_home() {
+            window.location.href = 'index_ippan.html';
+        }
+    </script>
+
+</body>
+
+</html>

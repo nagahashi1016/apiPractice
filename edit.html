@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>編集ページ</title>
+    <style>
+        .form{
+            margin-left: 43%;
+        }
+        #postForm button{
+            margin-left: 10%;
+            margin-top: 20px;
+        }
+        #patchForm{
+            margin-top: 4%;
+        }
+        #patchForm button{
+            margin-left: 10%;
+            margin-top: 20px;
+        }
+        #deleteForm{
+            margin-top: 4%;
+        }
+        #deleteForm button{
+            margin-left: 10%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form">
+    <h2>カメラ情報登録</h2>
+
+    <form id="postForm">
+
+        <label for="name">カメラ名：</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="type">タイプ：</label>
+        <input type="text" id="type" name="type" required><br>
+
+        <label for="sensorSize">センサーサイズ：</label>
+        <input type="text" id="sensorSize" name="sensorSize" required><br>
+
+        <label for="pixelNumber">画素数：</label>
+        <input type="text" id="pixelNumber" name="pixelNumber" required><br>
+
+        <label for="maker">メーカー：</label>
+        <input type="text" id="maker" name="maker" required><br>
+
+        <label for="lensMounts">レンズマウント：</label>
+        <input type="text" id="lensMounts" name="lensMounts" required><br>
+
+        <label for="imageSta">手ぶれ補正：</label>
+        <input type="text" id="imageSta" name="imageSta" required><br>
+
+        <label for="price">価格目安：</label>
+        <input type="text" id="price" name="price" required><br>
+
+        <label for="releaseDate">発売日：</label>
+        <input type="text" id="releaseDate" name="releaseDate" required><br>
+
+        <label for="URL">URL:</label>
+        <input type="url" id="URL" name="URL" required><br>
+
+        <button type="button" onclick="submitData()">投稿</button>
+    </form>
+    
+
+    <form id="patchForm">
+        <h2>カメラ情報変更</h2>
+        <label for="patchId">変更するカメラID：</label>
+        <input type="text" id="patchId" name="patchId" required><br>
+
+        <label for="names">変更後のカメラ名：</label>
+        <input type="text" id="names" name="name"><br>
+
+        <label for="types">変更後のタイプ：</label>
+        <input type="text" id="types" name="type"><br>
+
+        <label for="sensorSizes">変更後のセンサーサイズ：</label>
+        <input type="text" id="sensorSizes" name="sensorSize"><br>
+
+        <label for="pixelNumbers">変更後の画素数：</label>
+        <input type="text" id="pixelNumbers" name="pixelNumber"><br>
+
+        <label for="makers">変更後のメーカー：</label>
+        <input type="text" id="makers" name="maker"><br>
+
+        <label for="lensMountss">変更後のレンズマウント：</label>
+        <input type="text" id="lensMountss" name="lensMounts"><br>
+
+        <label for="imageStas">変更後の手ぶれ補正：</label>
+        <input type="text" id="imageStas" name="imageSta"><br>
+
+        <label for="prices">変更後の価格目安：</label>
+        <input type="text" id="prices" name="price"><br>
+
+        <label for="releaseDates">変更後の発売日：</label>
+        <input type="text" id="releaseDates" name="releaseDate"><br>
+
+        <label for="URLs">変更後のURL：</label>
+        <input type="text" id="URLs" name="URL"><br>
+
+        <button type="button" onclick="patchCamera()">更新</button>
+    </form>
+    
+    
+
+    <form id="deleteForm">
+        <h2>カメラ情報削除</h2>
+        <label for="deleteId">削除するカメラID：</label>
+        <input type="number" id="deleteId" name="deleteId" required><br>
+        <button type="button" onclick="deleteCamera()">削除</button><br>
+        <button onclick="redirect_home()">戻る</button>
+    </form>
+    
+    </div>
+
+
+    <script>
+        function submitData() {
+            console.log('Submit button clicked');
+            var name = document.getElementById('name').value;
+            var type = document.getElementById('type').value;
+            var sensorSize = document.getElementById('sensorSize').value;
+            var pixelNumber = document.getElementById('pixelNumber').value;
+            var maker = document.getElementById('maker').value;
+            var lensMounts = document.getElementById('lensMounts').value;
+            var imageSta = document.getElementById('imageSta').value;
+            var price = document.getElementById('price').value;
+            var releaseDate = document.getElementById('releaseDate').value;
+            var URL = document.getElementById('URL').value;
+
+            fetch(`http://127.0.0.1:8000/post/?name=${name}&type=${type}&sensorSize=${sensorSize}&pixelNumber=${pixelNumber}&maker=${maker}&lensMounts=${lensMounts}&imageSta=${imageSta}&price=${price}&releaseDate=${releaseDate}&URL=${URL}`, {
+                method: 'POST',
+            })
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function patchCamera() {
+            var patchId = document.getElementById('patchId').value;
+            var queryString = `where_id=${patchId}`;
+            var params = ["names", "types", "sensorSizes", "pixelNumbers", "makers", "lensMountss", "imageStas", "prices", "releaseDates", "URLs"];
+
+            params.forEach(param => {
+                var paramName = param.endsWith('s') ? param.slice(0, -1) : param;
+                var paramValue = document.getElementById(param).value;
+                if (paramValue !== "") {
+                    queryString += `&${paramName}=${paramValue}`;
+                }
+            });
+            console.log(queryString);
+
+            fetch(`http://127.0.0.1:8000/patch/?${queryString}`, {
+                method: 'PATCH',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    alert(data.message);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function deleteCamera() {
+            var deleteId = document.getElementById('deleteId').value;
+
+            fetch(`http://127.0.0.1:8000/delete/?id=${deleteId}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    alert(data.message);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        function redirect_home() {
+            window.location.href = 'index_kanri.html';
+        }
+    </script>
+
+</body>
+
+</html>
